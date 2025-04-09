@@ -226,6 +226,14 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+-- Filetypes for Bicep
+vim.cmd [[ autocmd BufNewFile,BufRead *.bicep set filetype=bicep ]]
+--vim.filetype.add {
+-- extension = {
+--   bicep = 'bicep',
+-- },
+--}
+
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -681,6 +689,12 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        bicep = {
+          cmd = {
+            'dotnet',
+            '/usr/local/bin/bicep-langserver/Bicep.LangServer.dll',
+          },
+        },
 
         lua_ls = {
           -- cmd = { ... },
@@ -1031,3 +1045,5 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+vim.lsp.set_log_level 'info'
