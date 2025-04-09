@@ -226,13 +226,12 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
--- Filetypes for Bicep
-vim.cmd [[ autocmd BufNewFile,BufRead *.bicep set filetype=bicep ]]
---vim.filetype.add {
--- extension = {
---   bicep = 'bicep',
--- },
---}
+-- Collect all filetypes in a single location
+vim.filetype.add {
+  extension = {
+    bicep = 'bicep', -- Added for bicep LSP
+  },
+}
 
 -- [[ Configure and install plugins ]]
 --
@@ -678,7 +677,7 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -689,11 +688,15 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+
+        -- Bicep lsp. The root_dir change is to support when a .git folder exists or as long as the
+        -- bicep file extension is found. This can probably be changed to just using the cwd in the future.
         bicep = {
-          cmd = {
-            'dotnet',
-            '/usr/local/bin/bicep-langserver/Bicep.LangServer.dll',
-          },
+          cmd = { 'dotnet', '/usr/local/bin/bicep-langserver/Bicep.LangServer.dll' },
+          root_dir = function(fname)
+            local git_dir = vim.fs.find('.git', { path = fname, upward = true })[1]
+            return git_dir and vim.fs.dirname(git_dir) or vim.loop.cwd()
+          end,
         },
 
         lua_ls = {
@@ -745,6 +748,8 @@ require('lazy').setup({
           end,
         },
       }
+
+      --require('lspconfig').bicep.setup(servers.bicep)
     end,
   },
 
